@@ -1,0 +1,16 @@
+# urls.py (accounts app)
+# Defines URL routes for authentication endpoints.
+#   POST /api/auth/register/        — create a new account
+#   POST /api/auth/login/           — login and get JWT tokens
+#   POST /api/auth/forgot-password/ — send password reset email
+#   POST /api/auth/reset-password/  — reset password with token
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('register/', views.register, name='register'),
+    path('login/', views.login, name='login'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('reset-password/', views.reset_password, name='reset_password'),
+]
