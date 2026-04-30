@@ -6,7 +6,7 @@
 
 import axios from 'axios'
 
-const API = 'http://127.0.0.1:8000/api/auth'
+const API = `${import.meta.env.VITE_API_URL}/api/auth`
 
 // Save token and username to localStorage
 const saveAuth = (data) => {

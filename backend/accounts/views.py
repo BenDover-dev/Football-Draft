@@ -4,6 +4,9 @@
 # Login returns a JWT access token and refresh token.
 # Password reset sends a reset link to the user's email.
 
+import requests as http_requests
+from decouple import config
+
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -90,8 +93,9 @@ def forgot_password(request):
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
 
-    # Reset link pointing to frontend
-    reset_link = f'http://localhost:5173/reset-password?uid={uid}&token={token}'
+    # Reset link pointing to frontend (reads from env var so it works in production too)
+    frontend_url = config('FRONTEND_URL', default='http://localhost:5173')
+    reset_link = f'{frontend_url}/reset-password?uid={uid}&token={token}'
 
     # Send email
     send_mail(
@@ -132,8 +136,6 @@ def reset_password(request):
 
     return Response({'message': 'Password reset successfully! You can now login.'})
 
-    import requests as http_requests
-
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_news(request):
@@ -144,7 +146,7 @@ def get_news(request):
         'language': 'en',
         'sortBy': 'publishedAt',
         'pageSize': 10,
-        'apiKey': '6da5c23715be427c98a79be01ef21ca5'
+        'apiKey': config('NEWS_API_KEY', default='')
     }
     response = http_requests.get(url, params=params)
     data = response.json()

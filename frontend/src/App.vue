@@ -23,7 +23,7 @@ const username = ref(getUsername())
 const pendingPage = ref(null)
 
 onMounted(async () => {
-  const response = await axios.get('http://127.0.0.1:8000/api/players/')
+  const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/players/`)
   players.value = response.data
   loading.value = false
 })

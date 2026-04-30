@@ -5,6 +5,8 @@
 <!-- Card tier: Gold=OVR 80+, Silver=OVR 65-79, Bronze=below 65 -->
 
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   player: Object,
   onAdd: Function,
@@ -94,6 +96,11 @@ const getPositionColor = (position) => {
   }
   return colors[position] || '#6b7280'
 }
+// Precomputed values — avoids calling generateStats/getOVR multiple times per render
+const stats = computed(() => generateStats(props.player))
+const ovr = computed(() => getOVR(stats.value, props.player.position))
+const cardGradient = computed(() => getTierGradient(ovr.value))
+const cardTextColor = computed(() => getTierText(ovr.value))
 </script>
 
 <template>
@@ -102,16 +109,16 @@ const getPositionColor = (position) => {
     <div
       class="relative w-44 cursor-pointer hover:scale-105 transition-transform duration-200"
       style="clip-path: polygon(0 0, 85% 0, 100% 8%, 100% 100%, 0 100%)"
-      :style="`background: ${getTierGradient(getOVR(generateStats(player), player.position))}`"
+      :style="`background: ${cardGradient}`"
       @click="onClick && onClick(player)"
     >
       <!-- Top: OVR + Position -->
       <div class="absolute top-2 left-2 flex flex-col items-center">
         <span
           class="text-2xl font-black leading-none"
-          :style="`color: ${getTierText(getOVR(generateStats(player), player.position))}`"
+          :style="`color: ${cardTextColor}`"
         >
-          {{ getOVR(generateStats(player), player.position) }}
+          {{ ovr }}
         </span>
         <span
           class="text-xs font-black mt-0.5"
@@ -134,7 +141,7 @@ const getPositionColor = (position) => {
       <!-- Player name -->
       <div
         class="text-center text-xs font-black px-2 pb-1 truncate"
-        :style="`color: ${getTierText(getOVR(generateStats(player), player.position))}`"
+        :style="`color: ${cardTextColor}`"
       >
         {{ player.name.split(' ').slice(-1)[0].toUpperCase() }}
       </div>
@@ -142,25 +149,25 @@ const getPositionColor = (position) => {
       <!-- Divider -->
       <div
         class="mx-3 mb-1"
-        :style="`border-top: 1px solid ${getTierText(getOVR(generateStats(player), player.position))}40`"
+        :style="`border-top: 1px solid ${cardTextColor}40`"
       ></div>
 
       <!-- Stats grid -->
       <div class="grid grid-cols-3 gap-x-2 gap-y-0.5 px-3 pb-3">
         <div
-          v-for="(value, label) in generateStats(player)"
+          v-for="(value, label) in stats"
           :key="label"
           class="flex gap-1 items-center"
         >
           <span
             class="text-xs font-black"
-            :style="`color: ${getTierText(getOVR(generateStats(player), player.position))}`"
+            :style="`color: ${cardTextColor}`"
           >
             {{ value }}
           </span>
           <span
             class="text-xs opacity-70"
-            :style="`color: ${getTierText(getOVR(generateStats(player), player.position))}`"
+            :style="`color: ${cardTextColor}`"
           >
             {{ label }}
           </span>

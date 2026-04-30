@@ -45,7 +45,7 @@ const handleSubmit = async () => {
       await register(username.value, email.value, password.value)
       emit('authenticated')
     } else if (mode.value === 'forgot') {
-      await axios.post('http://127.0.0.1:8000/api/auth/forgot-password/', { email: email.value })
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/forgot-password/`, { email: email.value })
       success.value = 'If this email is registered you will receive a reset link shortly!'
     }
   } catch (err) {
