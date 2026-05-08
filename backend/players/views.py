@@ -8,7 +8,10 @@
 #   Points Weight: 40% — total season points matters equally  
 #   Value Weight:  20% — points per million spent
 
+import requests
 from rest_framework import viewsets
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from .models import Player
 from .serializers import PlayerSerializer
 
@@ -37,3 +40,32 @@ class PlayerViewSet(viewsets.ModelViewSet):
         for player in players:
             player.draft_score = calculate_draft_score(player)
         return players
+
+
+@api_view(['GET'])
+def fetch_players_trigger(request):
+    """One-time endpoint to populate the database with FPL players."""
+    try:
+        url = 'https://fantasy.premierleague.com/api/bootstrap-static/'
+        response = requests.get(url, timeout=30)
+        data = response.json()
+
+        players = data['elements']
+        teams = {team['id']: team['name'] for team in data['teams']}
+        positions = {1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD'}
+
+        Player.objects.all().delete()
+        for player in players:
+            Player.objects.create(
+                name=f"{player['first_name']} {player['second_name']}",
+                position=positions[player['element_type']],
+                team=teams[player['team']],
+                price=player['now_cost'] / 10,
+                form=float(player['form'] or 0),
+                total_points=player['total_points'],
+                draft_score=0.0,
+                photo=player['photo'].replace('.jpg', '')
+            )
+        return Response({'status': 'success', 'players_fetched': len(players)})
+    except Exception as e:
+        return Response({'status': 'error', 'message': str(e)}, status=500)

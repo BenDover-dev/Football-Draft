@@ -9,9 +9,12 @@
 #   DEL  /api/players/{id} — delete a specific player
 
 from rest_framework.routers import DefaultRouter
-from .views import PlayerViewSet
+from django.urls import path
+from .views import PlayerViewSet, fetch_players_trigger
 
 router = DefaultRouter()
 router.register(r'players', PlayerViewSet, basename='player')
 
-urlpatterns = router.urls
+urlpatterns = router.urls + [
+    path('players/fetch/', fetch_players_trigger, name='fetch-players'),
+]
